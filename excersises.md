@@ -64,8 +64,6 @@ the credentials from the DB setup.
 
 1. Create Haskell types for these.
 
-1. Find out from the docs how `query` and `execute` work.
-
 1. See if you can get `FromRow` and `ToRow` instances for your custom types.
 
 1. Write a function `markActiveRevision :: Pg.Connection -> ? -> IO ()` which
