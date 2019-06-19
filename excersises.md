@@ -55,3 +55,22 @@ the credentials from the DB setup.
 1. Find out what function has type `Bytestring -> Query`
 
 1. Write a function `executeSqlFile :: Connection -> FilePath -> IO ()`
+
+## Domain model
+
+1. Think of how we'd want to represent the structure of the `schemactl` tables
+   in Haskell types things in the Database.  Find them in
+   `db/000_bootstrap.sql.up`.
+
+1. Create Haskell types for these.
+
+1. Find out from the docs how `query` and `execute` work.
+
+1. See if you can get `FromRow` and `ToRow` instances for your custom types.
+
+1. Write a function `markActiveRevision :: Pg.Connection -> ? -> IO ()` which
+marks a revision as active in the DB. You might need to create a type for this.
+
+1. Write a function `getActiveRevision :: Pg.Connection -> IO ?` which marks a
+revision as active in the DB. You might need to re-use your type from the
+previous section.
