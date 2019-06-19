@@ -1,0 +1,24 @@
+BEGIN;
+  CREATE TABLE IF NOT EXISTS schemactl_rev (
+    id INT PRIMARY KEY,
+    rev TEXT,
+    CHECK (id = 1)
+  );
+
+  DO $$
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'schemactl_event_type_t') THEN
+      CREATE TYPE schemactl_event_type_t AS ENUM ('upgrade', 'downgrade');
+    END IF;
+  END$$;
+
+  CREATE TABLE IF NOT EXISTS schemactl_events (
+    id BIGSERIAL PRIMARY KEY,
+    rev TEXT NOT NULL,
+    event_type schemactl_event_type_t NOT NULL,
+    applied TIMESTAMP WITH TIME ZONE default (now() at time zone 'utc') NOT NULL
+  );
+
+  INSERT INTO schemactl_rev VALUES (1, '000') ON CONFLICT DO NOTHING;
+  INSERT INTO schemactl_events VALUES (1, '000', 'upgrade') ON CONFLICT DO NOTHING;
+COMMIT;

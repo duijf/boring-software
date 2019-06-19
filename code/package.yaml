@@ -1,0 +1,37 @@
+name:                schemactl
+version:             0.1.0.0
+
+description: ""
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - bytestring
+    - directory
+    - postgresql-simple
+    - time
+
+executables:
+  schemactl:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - schemactl
+
+tests:
+  schemactl-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - schemactl

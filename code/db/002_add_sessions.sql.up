@@ -1,0 +1,5 @@
+create table sessions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) NOT NULL ON DELETE CASCADE,
+  secret TEXT NOT NULL
+)

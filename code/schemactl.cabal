@@ -1,0 +1,50 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bffbac57f9aebe24ce201704a9966f7f97472c6c26a36797df68b343f2aa7504
+
+name:           schemactl
+version:        0.1.0.0
+build-type:     Simple
+cabal-version:  >= 1.10
+
+library
+  exposed-modules:
+      Cli
+  other-modules:
+      Paths_schemactl
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , directory
+    , postgresql-simple
+    , time
+  default-language: Haskell2010
+
+executable schemactl
+  main-is: Main.hs
+  other-modules:
+      Paths_schemactl
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , schemactl
+  default-language: Haskell2010
+
+test-suite schemactl-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_schemactl
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , schemactl
+  default-language: Haskell2010
