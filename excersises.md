@@ -1,14 +1,5 @@
 ## Setup
 
-1. Get comfortable
-
-```
-git clone https://github.com/duijf/boring-software.git
-cd boring-software/code
-stack setup
-stack build
-```
-
 1. Get Postgres
 
 ```
@@ -24,6 +15,16 @@ $ sudo chown postgres:postgres -R /var/lib/postgres/data
 $ sudo -u postgres initdb /var/lib/postgres/data
 $ sudo systemctl start postgresql.service
 ```
+
+1. Get comfortable
+
+```
+git clone https://github.com/duijf/boring-software.git
+cd boring-software/code
+stack setup
+stack build
+```
+
 
 1. Set up the cluster roles and permissions
 
@@ -41,9 +42,9 @@ test=> drop table foo;
 
 ## First domain things
 
-1. Find the docs for `Connectioninfo`. Try to make a value of this type.
+1. Find the docs for `ConnectInfo`. Try to make a value of this type.
 
-1. Try to connect to Postgres from Haskell using you rown `ConnectionInfo`. Use
+1. Try to connect to Postgres from Haskell using you rown `ConnectInfo`. Use
 the credentials from the DB setup.
 
 1. Find out what functions from `postgresql-simple` allow you to operate on a
