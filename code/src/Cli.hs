@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Cli
-  ( main
-  ) where
+module Cli where
 
 import           Control.Monad (forM)
 import qualified Data.ByteString.Char8 as Bs
@@ -35,6 +33,11 @@ main = do
   let
     allMigrations
       = [ Migration
+          { mRev = "000"
+          , mDescription = "bootstrap"
+          , mBaseFile = "db/000_bootstrap.sql"
+          }
+        , Migration
           { mRev = "001"
           , mDescription = "add_users"
           , mBaseFile = "db/001_add_users.sql"
@@ -46,14 +49,16 @@ main = do
           }
         ]
 
-    toRun = getMigrationsToRun activeRev allMigrations
+  toRun <- either Exit.die pure $ getMigrationsToRun activeRev allMigrations
 
   forM toRun $ (\m -> runMigration conn Upgrade m)
   pure ()
 
 
-getMigrationsToRun :: Rev -> [Migration] -> [Migration]
-getMigrationsToRun activeRev allMigrations = allMigrations
+getMigrationsToRun :: Rev -> [Migration] -> Either String [Migration]
+getMigrationsToRun activeRev allMigrations = let
+  haveNotBeenRun = drop 1 $ dropWhile (\m -> activeRev /= mRev m) allMigrations
+  in pure $ haveNotBeenRun
 
 
 executeSqlFile :: Pg.Connection -> FilePath -> IO ()

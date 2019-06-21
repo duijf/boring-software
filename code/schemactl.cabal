@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 27ca303107275b6d991eedc0b610a64db29094793f1eecb6a4d13751441cd18e
+-- hash: 79e2e1db60f0413b724ba90105798e77e623379b5d0d3c65d52cd791ca32dfdc
 
 name:           schemactl
 version:        0.1.0.0
@@ -47,5 +47,6 @@ test-suite schemactl-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , hspec
     , schemactl
   default-language: Haskell2010

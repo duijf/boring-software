@@ -36,3 +36,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - schemactl
+    - hspec
