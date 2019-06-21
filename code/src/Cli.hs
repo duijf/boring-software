@@ -2,7 +2,7 @@
 
 module Cli where
 
-import           Control.Monad (forM)
+import           Control.Monad (forM, when)
 import qualified Data.ByteString.Char8 as Bs
 import           Data.String (IsString(..))
 import qualified Data.Time as Time
@@ -14,21 +14,33 @@ import qualified Database.PostgreSQL.Simple.ToRow as Pg
 import qualified Database.PostgreSQL.Simple.FromRow as Pg
 import qualified Database.PostgreSQL.Simple.Types as PgTypes
 import qualified System.Directory as Dir
+import qualified System.Environment as Env
 import qualified System.Exit as Exit
+
+
+parseOpts :: [String] -> Maybe EventType
+parseOpts = undefined
+
 
 main :: IO ()
 main = do
   let
+    usage = "usage: schemactl <up|down>"
     connectInfo
       = Pg.defaultConnectInfo
       { Pg.connectUser = "test"
       , Pg.connectPassword = "test"
       , Pg.connectDatabase = "test"
       }
+
+  args <- Env.getArgs
+  eventType <- maybe (Exit.die usage) pure $ parseOpts args
+
   conn <- Pg.connect connectInfo
   executeSqlFile conn "db/000_bootstrap.sql.up"
 
-  activeRev <- getActiveRev conn
+  --activeRev <- getActiveRev conn
+  activeRev <- pure $ Rev "asdf"
 
   let
     allMigrations
@@ -56,9 +68,13 @@ main = do
 
 
 getMigrationsToRun :: Rev -> [Migration] -> Either String [Migration]
-getMigrationsToRun activeRev allMigrations = let
-  haveNotBeenRun = drop 1 $ dropWhile (\m -> activeRev /= mRev m) allMigrations
-  in pure $ haveNotBeenRun
+getMigrationsToRun activeRev allMigrations = do
+  let
+    haveNotBeenRun = drop 1 $ dropWhile (\m -> activeRev /= mRev m) allMigrations
+
+  when (activeRev `notElem` fmap mRev allMigrations) (Left "activeRev is not in allMigrations")
+
+  pure $ haveNotBeenRun
 
 
 executeSqlFile :: Pg.Connection -> FilePath -> IO ()
