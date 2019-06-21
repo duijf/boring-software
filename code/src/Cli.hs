@@ -46,14 +46,14 @@ main = do
           }
         ]
 
-    newMigrations = getMigrationsToRun activeRev allMigrations
+    toRun = getMigrationsToRun activeRev allMigrations
 
-  forM newMigrations $ (\m -> runMigration conn Upgrade m)
+  forM toRun $ (\m -> runMigration conn Upgrade m)
   pure ()
 
 
 getMigrationsToRun :: Rev -> [Migration] -> [Migration]
-getMigrationsToRun activeRev allMigrations = undefined
+getMigrationsToRun activeRev allMigrations = allMigrations
 
 
 executeSqlFile :: Pg.Connection -> FilePath -> IO ()
@@ -88,8 +88,8 @@ data Migration
   } deriving (Show)
 
 
-instance Pg.ToRow Migration where
-  toRow migration = [(Pg.Escape . unRev . mRev) migration]
+instance Pg.ToRow Rev where
+  toRow rev = [Pg.toField rev]
 
 
 data Rev = Rev { unRev :: Bs.ByteString }
@@ -172,7 +172,7 @@ insertNewEvent conn event = do
 
 markActiveRevision :: Pg.Connection -> Migration -> IO ()
 markActiveRevision conn migration = do
-  Pg.execute conn "update schemactl_rev set rev = ? where id = 1" migration
+  Pg.execute conn "update schemactl_rev set rev = ?" (mRev migration)
   pure ()
 
 
