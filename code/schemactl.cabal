@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bffbac57f9aebe24ce201704a9966f7f97472c6c26a36797df68b343f2aa7504
+-- hash: 27ca303107275b6d991eedc0b610a64db29094793f1eecb6a4d13751441cd18e
 
 name:           schemactl
 version:        0.1.0.0
@@ -17,7 +17,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      attoparsec
+    , base >=4.7 && <5
     , bytestring
     , directory
     , postgresql-simple

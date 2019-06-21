@@ -9,6 +9,7 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+    - attoparsec
     - bytestring
     - directory
     - postgresql-simple
