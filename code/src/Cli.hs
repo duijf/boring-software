@@ -3,7 +3,9 @@
 module Cli where
 
 import           Control.Monad (forM, when)
+import qualified Data.Attoparsec.ByteString.Char8 as A
 import qualified Data.ByteString.Char8 as Bs
+import qualified Data.List as L
 import           Data.String (IsString(..))
 import qualified Data.Time as Time
 import qualified Data.List as List
@@ -19,7 +21,9 @@ import qualified System.Exit as Exit
 
 
 parseOpts :: [String] -> Maybe EventType
-parseOpts = undefined
+parseOpts ("up":[]) = Just Upgrade
+parseOpts ("down":[]) = Just Downgrade
+parseOpts _ = Nothing
 
 
 main :: IO ()
@@ -36,39 +40,56 @@ main = do
   args <- Env.getArgs
   eventType <- maybe (Exit.die usage) pure $ parseOpts args
 
+  print eventType
+
   conn <- Pg.connect connectInfo
   executeSqlFile conn "db/000_bootstrap.sql.up"
 
-  --activeRev <- getActiveRev conn
-  activeRev <- pure $ Rev "asdf"
+  activeRev <- getActiveRev conn
 
-  let
-    allMigrations
-      = [ Migration
-          { mRev = "000"
-          , mDescription = "bootstrap"
-          , mBaseFile = "db/000_bootstrap.sql"
-          }
-        , Migration
-          { mRev = "001"
-          , mDescription = "add_users"
-          , mBaseFile = "db/001_add_users.sql"
-          }
-        , Migration
-          { mRev = "002"
-          , mDescription = "add_sessions"
-          , mBaseFile = "db/002_add_sessions.sql"
-          }
-        ]
+  indexFileContents <- Bs.readFile "db/schemactl-index"
+  allMigrations <- either Exit.die pure $ A.parseOnly (indexFileP "db") indexFileContents
 
-  toRun <- either Exit.die pure $ getMigrationsToRun activeRev allMigrations
+  print (allMigrations)
+
+  toRun <- either Exit.die pure $ getMigrationsToRun activeRev eventType allMigrations
 
   forM toRun $ (\m -> runMigration conn Upgrade m)
   pure ()
 
 
-getMigrationsToRun :: Rev -> [Migration] -> Either String [Migration]
-getMigrationsToRun activeRev allMigrations = do
+indexFileP :: FilePath -> A.Parser [Migration]
+indexFileP baseDir = do
+  migrations <- A.many1 (migrationP baseDir Nothing)
+  pure (setParents migrations)
+
+
+setParents :: [Migration] -> [Migration]
+setParents migrations = let
+  setParents parent migration = (Just $ mRev migration, migration { mParent = parent})
+  in snd $ L.mapAccumL setParents Nothing migrations
+
+
+migrationP :: FilePath-> Maybe Rev -> A.Parser Migration
+migrationP baseDir parent = do
+  rev <- A.takeWhile (\c -> c /= '_')
+  A.char '_'
+
+  description <- A.takeWhile (\c -> c /= '.')
+  A.string ".sql"
+  A.char '\n'
+
+  pure
+    Migration
+      { mRev = Rev rev
+      , mDescription = description
+      , mParent = parent
+      , mBaseFile = baseDir <>  Bs.unpack ("/" <> rev <> "_" <> description <> ".sql")
+      }
+
+
+getMigrationsToRun :: Rev -> EventType -> [Migration] -> Either String [Migration]
+getMigrationsToRun activeRev eventType allMigrations = do
   let
     haveNotBeenRun = drop 1 $ dropWhile (\m -> activeRev /= mRev m) allMigrations
 
@@ -104,6 +125,7 @@ runMigration conn eType migration = do
 data Migration
   = Migration
   { mRev :: Rev
+  , mParent :: Maybe Rev
   , mDescription :: Bs.ByteString
   , mBaseFile :: FilePath
   } deriving (Show)
@@ -162,6 +184,7 @@ requireFile filePath = do
 data EventType
   = Upgrade
   | Downgrade
+  deriving (Show)
 
 
 instance Pg.ToField EventType where
